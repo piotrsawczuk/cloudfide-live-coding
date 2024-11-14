@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { BinanceService } from '../binance/binance.service';
-import { CryptocurrencyChange } from './model/cryptocurrency-change.model';
+import {
+  CryptocurrencyAction,
+  CryptocurrencyChange,
+} from './model/cryptocurrency-change.model';
 import { AggregatedTrade } from 'binance-api-node';
 
 @Injectable()
@@ -30,31 +33,29 @@ export class CryptocurrencyAnalyzerService {
       .forEach((trade) => {
         const currentPrice = parseFloat(trade.price);
 
-        if (lastPrice === null || lastPrice === currentPrice) {
-          analyzedData.push({
-            symbol: trade.symbol,
-            timestamp: new Date(trade.timestamp),
-            price: trade.price,
-            action: 'NO_CHANGE',
-          });
-          lastPrice = currentPrice;
-        } else if (currentPrice > lastPrice) {
-          analyzedData.push({
-            symbol: trade.symbol,
-            timestamp: new Date(trade.timestamp),
-            price: trade.price,
-            action: 'INCREASE',
-          });
-        } else if (currentPrice < lastPrice) {
-          analyzedData.push({
-            symbol: trade.symbol,
-            timestamp: new Date(trade.timestamp),
-            price: trade.price,
-            action: 'INCREASE',
-          });
-        }
+        const cryptocurrencyChange: CryptocurrencyChange = {
+          symbol: trade.symbol,
+          timestamp: new Date(trade.timestamp),
+          price: trade.price,
+          action: this.defineAction(lastPrice, currentPrice),
+        };
+        lastPrice = currentPrice;
+        analyzedData.push(cryptocurrencyChange);
       });
 
     return analyzedData;
+  }
+
+  private defineAction(
+    lastPrice: number | null,
+    currentPrice: number,
+  ): CryptocurrencyAction {
+    if (lastPrice === null || lastPrice === currentPrice) {
+      return 'NO_CHANGE';
+    } else if (currentPrice > lastPrice) {
+      return 'INCREASE';
+    } else if (currentPrice < lastPrice) {
+      return 'DECREASE';
+    }
   }
 }
