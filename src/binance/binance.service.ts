@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import Binance from 'binance-api-node';
+import Binance, { Binance as BinanceClient } from 'binance-api-node';
 
 @Injectable()
 export class BinanceService {
-  constructor(private readonly binance = Binance()) {}
+  private readonly binanceClient: BinanceClient;
 
-  async historicalMarketData(symbol: string, from: Date, to: Date) {
-    return this.binance.aggTrades({
+  constructor() {
+    this.binanceClient = Binance();
+  }
+
+  async historicalMarketData(symbol: string, dateFrom: Date, dateTo: Date) {
+    return this.binanceClient.aggTrades({
       symbol,
-      startTime: from.getTime(),
-      endTime: to.getTime(),
+      startTime: dateFrom.getTime(),
+      endTime: dateTo.getTime(),
     });
   }
 }
