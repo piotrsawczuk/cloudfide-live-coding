@@ -15,4 +15,16 @@ describe('BinanceService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  it('should return data', async () => {
+    service.historicalMarketData = jest.fn().mockImplementation(() => []);
+
+    expect(
+      await service.historicalMarketData(
+        'ETHBTC',
+        new Date('2024-11-01'),
+        new Date('2024-11-14'),
+      ),
+    ).toEqual([]);
+  });
 });
